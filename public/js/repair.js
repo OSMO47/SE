@@ -6,7 +6,8 @@ const API_ENDPOINTS = {
     ACCEPT: '/repair/accept',
     UPDATE_STATUS: '/repair/update-status',
     GET_TOTAL: '/repair/get-total',
-    PAYMENT: '/repair/payment'
+    PAYMENT: '/repair/payment',
+    DEVICE_HISTORY: '/repair/device-history'
 };
 
 let repairCounter = 0;  // นับจำนวนรายการซ่อม
@@ -674,6 +675,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 closeUpdateModal();
             } else if (modal.id === 'paymentModal') {
                 closePaymentModal();
+            } else if (modal.id === 'deviceHistoryModal') {
+                closeDeviceHistoryModal();
             }
         });
     });
@@ -684,6 +687,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const modalId = event.target.id;
             if (modalId === 'updateModal') closeUpdateModal();
             else if (modalId === 'paymentModal') closePaymentModal();
+            else if (modalId === 'deviceHistoryModal') closeDeviceHistoryModal();
         }
     };
 });

@@ -424,6 +424,38 @@
    </div>
 </div>
 
+<div class="modal" id="deviceHistoryModal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3>ประวัติการซ่อมจากรหัสเครื่อง: <span id="historyDeviceCode">-</span></h3>
+            <button type="button" class="close-button">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="deviceHistoryEmpty" class="history-empty">
+                ไม่พบประวัติการซ่อมจากรหัสเครื่องนี้
+            </div>
+            <div class="history-table-wrapper">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>รหัสงาน</th>
+                            <th>ลูกค้า</th>
+                            <th>ประเภท/รายละเอียด</th>
+                            <th>รายการซ่อม</th>
+                            <th>ราคารวม</th>
+                            <th>วันที่รับงาน</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deviceHistoryTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="button" class="btn-secondary close-button">ปิด</button>
+        </div>
+    </div>
+</div>
+
 <script src="/js/repair.js"></script>
 </body>
 </html>
