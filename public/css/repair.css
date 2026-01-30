@@ -406,6 +406,47 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.modal-content.modal-large {
+    max-width: 900px;
+}
+
+.modal-body {
+    padding: 16px 24px;
+}
+
+.history-table-wrapper {
+    overflow-x: auto;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.history-table th,
+.history-table td {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 10px 8px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.history-table th {
+    background: #f8fafc;
+    font-weight: 600;
+}
+
+.history-empty {
+    display: none;
+    padding: 16px;
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    color: #92400e;
+    margin-bottom: 16px;
+}
+
 .device-code-row {
     display: flex;
     gap: 10px;

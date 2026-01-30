@@ -269,7 +269,89 @@ function setupRepairItemEvents(repairItem) {
         checkbox.addEventListener('change', () => handleRepairTypeChange(checkbox));
     });
 
-    // No extra handlers needed for IMEI/serial inputs currently
+    const checkButton = repairItem.querySelector('.btn-check-device');
+    if (checkButton) {
+        checkButton.addEventListener('click', () => handleDeviceHistoryCheck(repairItem));
+    }
+}
+
+function formatCurrency(amount) {
+    return `฿${Number(amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}`;
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('th-TH');
+}
+
+async function handleDeviceHistoryCheck(repairItem) {
+    const imeiInput = repairItem.querySelector('.device-imei-input');
+    const codeInput = repairItem.querySelector('.device-code-input');
+    const deviceCode = (imeiInput?.value || codeInput?.value || '').trim();
+    if (!deviceCode) {
+        showNotification('กรุณากรอกรหัส IMEI หรือรหัสเครื่องก่อนค้นหา', 'warning');
+        return;
+    }
+
+    try {
+        showNotification('กำลังค้นหาประวัติการซ่อม...', 'info');
+        const response = await fetch(`${API_ENDPOINTS.DEVICE_HISTORY}?device_code=${encodeURIComponent(deviceCode)}`);
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || 'ไม่สามารถค้นหาประวัติได้');
+        }
+
+        if (result.history.length === 0) {
+            showNotification('ไม่พบประวัติการซ่อมจากรหัสเครื่องนี้', 'info');
+            return;
+        }
+
+        openDeviceHistoryModal(deviceCode, result.history);
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification(`เกิดข้อผิดพลาดในการค้นหา: ${error.message}`, 'error');
+    }
+}
+
+function openDeviceHistoryModal(deviceCode, history) {
+    const modal = document.getElementById('deviceHistoryModal');
+    const tableBody = document.getElementById('deviceHistoryTableBody');
+    const emptyState = document.getElementById('deviceHistoryEmpty');
+    const codeLabel = document.getElementById('historyDeviceCode');
+
+    if (!modal || !tableBody || !emptyState || !codeLabel) return;
+
+    codeLabel.textContent = deviceCode;
+    tableBody.innerHTML = '';
+
+    if (!history.length) {
+        emptyState.style.display = 'block';
+    } else {
+        emptyState.style.display = 'none';
+        history.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.repair_code || '-'}</td>
+                <td>${item.customer_name || '-'}<br><small>${item.phone_number || '-'}</small></td>
+                <td>${item.device_type || '-'}<br><small>${item.device_description || '-'}</small></td>
+                <td>${item.repair_types || '-'}</td>
+                <td>${formatCurrency(item.total_amount)}</td>
+                <td>${formatDate(item.created_at)}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    modal.style.display = 'block';
+}
+
+function closeDeviceHistoryModal() {
+    const modal = document.getElementById('deviceHistoryModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 async function showPaymentModal(repairId) {
