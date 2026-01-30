@@ -290,7 +290,46 @@
                                    <textarea name="repairs[0][device_description]" 
                                            class="device-description"
                                            rows="3" required 
-                                           placeholder="กรุณาระบุรายละเอียดอุปกรณ์ เช่น ยี่ห้อ รุ่น อาการเสีย"></textarea>
+                                           placeholder="กรุณาระบุรายละเอียดอุปกรณ์ เช่น ยี่ห้อ รุ่น สี ความจุ"></textarea>
+                               </div>
+                               <div class="form-group">
+                                   <label>อาการเสีย:</label>
+                                   <textarea name="repairs[0][issue_description]"
+                                           class="issue-description"
+                                           rows="3" required
+                                           placeholder="กรุณาระบุอาการเสียของเครื่อง"></textarea>
+                               </div>
+                               <div class="form-group">
+                                   <label>รหัส IMEI เครื่อง:</label>
+                                   <div class="device-code-row">
+                                       <input type="text"
+                                              class="device-imei-input"
+                                              name="repairs[0][device_imei]"
+                                              required
+                                              list="device-imei-options"
+                                              placeholder="กรอกรหัส IMEI เพื่อบันทึกลงระบบ">
+                                       <button type="button" class="btn-secondary btn-check-device">
+                                           <i class="ri-search-line"></i> ค้นหา
+                                       </button>
+                                   </div>
+                                   <small class="form-hint">ใช้รหัส IMEI เพื่อบันทึกและค้นหาในอนาคต</small>
+                               </div>
+                               <datalist id="device-imei-options">
+                                   <% if (deviceCodes && deviceCodes.length > 0) { %>
+                                       <% deviceCodes.forEach(code => { %>
+                                           <option value="<%= code.device_code %>"></option>
+                                       <% }); %>
+                                   <% } %>
+                               </datalist>
+                               <div class="form-group">
+                                   <label>รหัสเครื่อง (อื่น ๆ):</label>
+                                   <div class="device-code-row">
+                                       <input type="text"
+                                              class="device-code-input"
+                                              name="repairs[0][device_code]"
+                                              placeholder="เช่น Serial Number (ถ้ามี)">
+                                   </div>
+                                   <small class="form-hint">เก็บข้อมูลรหัสเครื่องอื่น ๆ เพิ่มเติม (ถ้ามี)</small>
                                </div>
 
                                <div class="form-group">
@@ -394,6 +433,38 @@
            </div>
        </form>
    </div>
+</div>
+
+<div class="modal" id="deviceHistoryModal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3>ประวัติการซ่อมจากรหัสเครื่อง: <span id="historyDeviceCode">-</span></h3>
+            <button type="button" class="close-button">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="deviceHistoryEmpty" class="history-empty">
+                ไม่พบประวัติการซ่อมจากรหัสเครื่องนี้
+            </div>
+            <div class="history-table-wrapper">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>รหัสงาน</th>
+                            <th>ลูกค้า</th>
+                            <th>ประเภท/รายละเอียด</th>
+                            <th>รายการซ่อม</th>
+                            <th>ราคารวม</th>
+                            <th>วันที่รับงาน</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deviceHistoryTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="button" class="btn-secondary close-button">ปิด</button>
+        </div>
+    </div>
 </div>
 
 <script src="/js/repair.js"></script>
