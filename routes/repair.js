@@ -71,13 +71,31 @@ router.get('/create', isAuthenticated, (req, res) => {
                     });
                 }
 
-                res.render('repair/create', {
-                    user: req.session.user,
-                    repairTypes,
-                    deviceTypes,
-                    parts,
-                    title: 'สร้างงานซ่อมใหม่'
-                });
+                // ดึงรหัสเครื่องที่มีอยู่แล้ว (สำหรับเลือกจากฐานข้อมูล)
+                db.query(
+                    `SELECT DISTINCT device_code
+                     FROM repair_info
+                     WHERE device_code IS NOT NULL AND device_code <> ''
+                     ORDER BY device_code`,
+                    (err, deviceCodes) => {
+                        if (err) {
+                            console.error('Error:', err);
+                            return res.render('error', {
+                                message: 'เกิดข้อผิดพลาดในการดึงข้อมูล',
+                                user: req.session.user
+                            });
+                        }
+
+                        res.render('repair/create', {
+                            user: req.session.user,
+                            repairTypes,
+                            deviceTypes,
+                            parts,
+                            deviceCodes,
+                            title: 'สร้างงานซ่อมใหม่'
+                        });
+                    }
+                );
             });
         });
     });
