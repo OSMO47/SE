@@ -200,9 +200,9 @@ router.post('/create', isAuthenticated, (req, res) => {
             // บันทึกข้อมูลการซ่อม
             db.query(`
                 INSERT INTO repair_info 
-                (repair_code, customer_id, device_type_id, device_description, status_id)
-                VALUES (?, ?, ?, ?, 1)
-            `, [repairCode, customerId, repair.device_type_id, repair.device_description], 
+                (repair_code, customer_id, device_type_id, device_description, device_code, status_id)
+                VALUES (?, ?, ?, ?, ?, 1)
+            `, [repairCode, customerId, repair.device_type_id, repair.device_description, repair.device_code || null], 
             (err, repairResult) => {
                 if (err) {
                     console.log('❌ Repair info error:', err);
@@ -297,7 +297,6 @@ router.post('/create', isAuthenticated, (req, res) => {
         };
     });
 });
-
 
 // หน้ารายการซ่อม
 router.get('/list', isAuthenticated, (req, res) => {

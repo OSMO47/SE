@@ -290,7 +290,35 @@
                                    <textarea name="repairs[0][device_description]" 
                                            class="device-description"
                                            rows="3" required 
-                                           placeholder="กรุณาระบุรายละเอียดอุปกรณ์ เช่น ยี่ห้อ รุ่น อาการเสีย"></textarea>
+                                           placeholder="กรุณาระบุรายละเอียดอุปกรณ์ เช่น ยี่ห้อ รุ่น สี ความจุ"></textarea>
+                               </div>
+                               <div class="form-group">
+                                   <label>อาการเสีย:</label>
+                                   <textarea name="repairs[0][issue_description]"
+                                           class="issue-description"
+                                           rows="3" required
+                                           placeholder="กรุณาระบุอาการเสียของเครื่อง"></textarea>
+                               </div>
+                               <div class="form-group">
+                                   <label>รหัส IMEI เครื่อง:</label>
+                                   <div class="device-code-row">
+                                       <input type="text"
+                                              class="device-imei-input"
+                                              name="repairs[0][device_imei]"
+                                              required
+                                              placeholder="กรอกรหัส IMEI เพื่อบันทึกลงระบบ">
+                                   </div>
+                                   <small class="form-hint">ใช้รหัส IMEI เพื่อบันทึกและค้นหาในอนาคต</small>
+                               </div>
+                               <div class="form-group">
+                                   <label>รหัสเครื่อง (อื่น ๆ):</label>
+                                   <div class="device-code-row">
+                                       <input type="text"
+                                              class="device-code-input"
+                                              name="repairs[0][device_code]"
+                                              placeholder="เช่น Serial Number (ถ้ามี)">
+                                   </div>
+                                   <small class="form-hint">เก็บข้อมูลรหัสเครื่องอื่น ๆ เพิ่มเติม (ถ้ามี)</small>
                                </div>
 
                                <div class="form-group">
