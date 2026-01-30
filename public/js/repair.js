@@ -645,6 +645,10 @@ async function handleCreateForm(event) {
                 showNotification(`กรุณากรอกรายละเอียดอุปกรณ์ในรายการที่ ${index + 1}`, 'error');
                 throw new Error(`กรุณากรอกรายละเอียดอุปกรณ์ในรายการที่ ${index + 1}`);
             }
+            if (!repair.device_code) {
+                showNotification(`กรุณากรอกรหัสเครื่องในรายการที่ ${index + 1}`, 'error');
+                throw new Error(`กรุณากรอกรหัสเครื่องในรายการที่ ${index + 1}`);
+            }
             if (!repair.repair_types.length) {
                 showNotification(`กรุณาเลือกรายการซ่อมในรายการที่ ${index + 1}`, 'error');
                 throw new Error(`กรุณาเลือกรายการซ่อมในรายการที่ ${index + 1}`);
