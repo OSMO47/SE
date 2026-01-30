@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกิดข้อผิดพลาด</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="error-container">
+            <div class="error-box">
+                <i class="ri-error-warning-line"></i>
+                <h1>เกิดข้อผิดพลาด</h1>
+                <% if (typeof message !== 'undefined' && message) { %>
+                    <p class="error-message"><%= message %></p>
+                <% } %>
+                
+                <% if (process.env.NODE_ENV === 'development' && typeof error !== 'undefined' && error) { %>
+                    <div class="error-details">
+                        <pre><%= error.stack %></pre>
+                    </div>
+                <% } %>
+                
+                <div class="error-actions">
+                    <a href="javascript:history.back()" class="btn-secondary">
+                        <i class="ri-arrow-left-line"></i> 
+                        ย้อนกลับ
+                    </a>
+                    <a href="/" class="btn-primary">
+                        <i class="ri-home-line"></i>
+                        กลับหน้าหลัก
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .error-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .error-box {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .error-box i {
+            font-size: 4rem;
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+
+        .error-message {
+            color: #666;
+            margin: 1rem 0;
+            font-size: 1.1rem;
+        }
+
+        .error-details {
+            margin: 1.5rem 0;
+            text-align: left;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        .error-details pre {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-primary:hover,
+        .btn-secondary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+    </style>
+</body>
+</html>

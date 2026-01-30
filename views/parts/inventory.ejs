@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คลังอะไหล่</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/parts.css">
+</head>
+<body>
+    <%- include('../partials/header') %>
+
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="ri-tools-fill"></i> คลังอะไหล่</h1>
+            <div class="header-actions">
+                <button class="btn-primary" onclick="showAddPartModal()">
+                    <i class="ri-add-line"></i> เพิ่มอะไหล่
+                </button>
+                <a href="/parts/history" class="btn-secondary">
+                    <i class="ri-history-line"></i> ประวัติ
+                </a>
+            </div>
+        </div>
+
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <i class="ri-database-2-line"></i>
+                <div class="stat-info">
+                    <span class="stat-label">รายการทั้งหมด</span>
+                    <span class="stat-value" id="totalParts"><%= parts.length %></span>
+                </div>
+            </div>
+            <div class="stat-card warning">
+                <i class="ri-alert-line"></i>
+                <div class="stat-info">
+                    <span class="stat-label">สต็อกต่ำ</span>
+                    <span class="stat-value" id="lowStockCount">0</span>
+                </div>
+            </div>
+            <div class="stat-card danger">
+                <i class="ri-error-warning-line"></i>
+                <div class="stat-info">
+                    <span class="stat-label">หมดสต็อก</span>
+                    <span class="stat-value" id="outOfStockCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <div class="search-box">
+                <i class="ri-search-line"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="ค้นหาอะไหล่...">
+            </div>
+            <div class="filter-group">
+                <select id="stockFilter" class="filter-select">
+                    <option value="all">สถานะทั้งหมด</option>
+                    <option value="low">สต็อกต่ำ</option>
+                    <option value="out">หมดสต็อก</option>
+                </select>
+                <select id="deviceTypeFilter" class="filter-select">
+                    <option value="all">ทุกประเภท</option>
+                    <% deviceTypes.forEach(type => { %>
+                        <option value="<%= type.id %>"><%= type.name %></option>
+                    <% }); %>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="parts-table">
+                <thead>
+                    <tr>
+                        <th>รหัส</th>
+                        <th>ชื่ออะไหล่</th>
+                        <th>รายละเอียด</th>
+                        <th>ประเภทอุปกรณ์</th>
+                        <th>ราคา</th>
+                        <th>จำนวนคงเหลือ</th>
+                        <th>จำนวนขั้นต่ำ</th>
+                        <th>สถานะ</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% parts.forEach(part => { %>
+                        <tr data-id="<%= part.id %>">
+                            <td class="text-center"><%= part.id %></td>
+                            <td><%= part.name %></td>
+                            <td><%= part.description %></td>
+                            <td>
+                                <div class="device-types">
+                                    <% if (part.device_type_names && part.device_type_names.length > 0) { %>
+                                        <% part.device_type_names.forEach(type => { %>
+                                            <span class="device-type-tag"><%= type %></span>
+                                        <% }); %>
+                                    <% } %>
+                                </div>
+                            </td>
+                            <td class="text-right">฿<%= part.price.toFixed(2) %></td>
+                            <td class="text-center">
+                                <span class="stock-badge <%= part.stock_quantity === 0 ? 'out' : part.stock_quantity <= part.min_quantity ? 'low' : '' %>">
+                                    <%= part.stock_quantity %>
+                                </span>
+                            </td>
+                            <td class="text-center"><%= part.min_quantity %></td>
+                            <td>
+                                <span class="status-badge <%= part.stock_quantity === 0 ? 'danger' : part.stock_quantity <= part.min_quantity ? 'warning' : 'success' %>">
+                                    <%= part.stock_quantity === 0 ? 'หมดสต็อก' : part.stock_quantity <= part.min_quantity ? 'ใกล้หมด' : 'ปกติ' %>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-icon" onclick="showEditPartModal('<%= part.id %>')" title="แก้ไข">
+                                        <i class="ri-edit-line"></i>
+                                    </button>
+                                    <button class="btn-icon success" onclick="showReceiveModal('<%= part.id %>')" title="รับเข้า">
+                                        <i class="ri-arrow-down-line"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal เพิ่มอะไหล่ -->
+    <div id="addPartModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="ri-add-line"></i> เพิ่มอะไหล่ใหม่</h2>
+                <button class="close-button" onclick="closeModal('addPartModal')">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <form id="addPartForm" onsubmit="return handleAddPart(event)">
+                <div class="form-group">
+                    <label for="name">ชื่ออะไหล่:</label>
+                    <div class="input-with-icon">
+                        <i class="ri-text-line"></i>  <!-- เปลี่ยนเป็นไอคอนแบบข้อความ -->
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="description">รายละเอียด:</label>
+                    <textarea id="description" name="description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>ประเภทอุปกรณ์ที่ใช้ได้:</label>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-section">
+                            <% deviceTypes.filter(type => !type.name.includes('อุปกรณ์เสริม')).forEach(type => { %>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="device_types[]" value="<%= type.id %>">
+                                    <span><%= type.name %></span>
+                                </label>
+                            <% }); %>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="price">ราคา:</label>
+                        <div class="input-with-icon">
+                            <i class=""></i>
+                            <input type="number" id="price" name="price" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="stock_quantity">จำนวนเริ่มต้น:</label>
+                        <div class="input-with-icon">
+                            <i class=""></i>
+                            <input type="number" id="stock_quantity" name="stock_quantity" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="min_quantity">จำนวนขั้นต่ำ:</label>
+                        <div class="input-with-icon">
+                            <i class=""></i>
+                            <input type="number" id="min_quantity" name="min_quantity" min="0" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <i class="ri-save-line"></i> บันทึก
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="closeModal('addPartModal')">
+                        <i class="ri-close-line"></i> ยกเลิก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal แก้ไขอะไหล่ -->
+    <div id="editPartModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="ri-edit-line"></i> แก้ไขอะไหล่</h2>
+                <button class="close-button" onclick="closeModal('editPartModal')">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <form id="editPartForm" onsubmit="return handleEditPart(event)">
+                <input type="hidden" id="edit_part_id" name="part_id">
+                <div class="form-group">
+                    <label for="edit_name">ชื่ออะไหล่:</label>
+                    <div class="input-with-icon">
+                        <i class=""></i>
+                        <input type="text" id="edit_name" name="name" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit_description">รายละเอียด:</label>
+                    <textarea id="edit_description" name="description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>ประเภทอุปกรณ์ที่ใช้ได้:</label>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-section">
+                            <h4>อุปกรณ์หลัก</h4>
+                            <% deviceTypes.filter(type => !type.name.includes('อุปกรณ์เสริม')).forEach(type => { %>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="device_types[]" value="<%= type.id %>">
+                                    <span><%= type.name %></span>
+                                </label>
+                            <% }); %>
+                        </div>
+                        <div class="checkbox-section">
+                            <h4>อุปกรณ์เสริม</h4>
+                            <% deviceTypes.filter(type => type.name.includes('อุปกรณ์เสริม')).forEach(type => { %>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="device_types[]" value="<%= type.id %>">
+                                    <span><%= type.name %></span>
+                                </label>
+                            <% }); %>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_price">ราคา:</label>
+                        <div class="input-with-icon">
+                            <i class=""></i>
+                            <input type="number" id="edit_price" name="price" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_min_quantity">จำนวนขั้นต่ำ:</label>
+                        <div class="input-with-icon">
+                            <i class=""></i>
+                            <input type="number" id="edit_min_quantity" name="min_quantity" min="0" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <i class="ri-save-line"></i> บันทึก
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="closeModal('editPartModal')">
+                        <i class="ri-close-line"></i> ยกเลิก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal รับอะไหล่ -->
+    <div id="receiveModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="ri-inbox-archive-line"></i> รับอะไหล่</h2>
+                <button class="close-button" onclick="closeModal('receiveModal')">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <form id="receiveForm" onsubmit="return handleReceivePart(event)">
+                <input type="hidden" id="receive_part_id" name="part_id">
+                <div class="form-group">
+                    <label for="receive_quantity">จำนวนที่รับ:</label>
+                    <div class="input-with-icon">
+                        <i class=""></i>
+                        <input type="number" id="receive_quantity" name="quantity" min="1" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="receive_note">หมายเหตุ:</label>
+                    <div class="input-with-icon">
+                        <i class=""></i>
+                        <input type="text" id="receive_note" name="note" placeholder="เพิ่มหมายเหตุ (ไม่บังคับ)">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <i class="ri-check-line"></i> บันทึก
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="closeModal('receiveModal')">
+                        <i class="ri-close-line"></i> ยกเลิก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/parts.js"></script>
+    <script>
+        // Update stats on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const parts = Array.from(document.querySelectorAll('.parts-table tbody tr'));
+            const lowStock = parts.filter(row => {
+                const stockQty = parseInt(row.querySelector('.stock-badge').textContent);
+                const minQty = parseInt(row.cells[6].textContent);
+                return stockQty <= minQty && stockQty > 0;
+            });
+            const outOfStock = parts.filter(row => {
+                return parseInt(row.querySelector('.stock-badge').textContent) === 0;
+            });
+
+            document.getElementById('totalParts').textContent = parts.length;
+            document.getElementById('lowStockCount').textContent = lowStock.length;
+            document.getElementById('outOfStockCount').textContent = outOfStock.length;
+
+            // Show low stock alert if needed
+            if (lowStock.length > 0) {
+                const alertElement = document.getElementById('lowStockAlert');
+                if (alertElement) {
+                    alertElement.style.display = 'flex';
+                    document.getElementById('lowStockCount').textContent = lowStock.length;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สร้างงานซ่อมใหม่</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/repair.css">
+  <style>
+      .repair-item {
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          padding: 20px;
+          margin-bottom: 20px;
+          background: #fff;
+      }
+
+      .section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+      }
+
+      .btn-remove-item {
+          background: #dc3545;
+          color: white;
+          border: none;
+          padding: 5px 10px;
+          border-radius: 4px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+      }
+
+      .btn-remove-item:hover {
+          background: #c82333;
+      }
+
+      .repair-types-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 10px;
+          margin-top: 10px;
+          max-height: 300px;
+          overflow-y: auto;
+      }
+
+      .parts-grid {
+          max-height: 600px;
+          overflow-y: auto;
+          grid-template-columns: 1fr;
+          gap: 10px;
+          margin-top: 15px;
+      }
+
+      .part-card {
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          padding: 15px;
+          background: #fff;
+          display: flex;
+          gap: 15px;
+          transition: all 0.2s;
+          border: 1px solid #e9ecef;
+      }
+
+      .part-card:hover {
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .part-checkbox {
+          display: flex;
+          align-items: center;
+      }
+
+      .part-info {
+          flex: 1;
+      }
+
+      .part-name {
+          margin: 0 0 5px 0;
+          font-size: 1.1em;
+          color: #333;
+      }
+
+      .part-description {
+          color: #666;
+          font-size: 0.9em;
+          margin-bottom: 10px;
+      }
+
+      .part-details {
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.9em;
+          margin-bottom: 10px;
+      }
+
+      .stock {
+          color: #28a745;
+      }
+
+      .price {
+          color: #dc3545;
+          font-weight: bold;
+      }
+
+      .part-quantity {
+          margin-top: 10px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+      }
+
+      .quantity-input {
+          width: 80px;
+          padding: 5px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+      }
+
+      .device-type-select {
+          width: 100%;
+          padding: 8px;
+          border-radius: 4px;
+          border: 1px solid #ddd;
+      }
+
+      #addRepairItem {
+          margin-bottom: 20px;
+          background: #17a2b8;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+      }
+
+      #addRepairItem:hover {
+          background: #138496;
+      }
+
+      .no-parts {
+          grid-column: 1 / -1;
+          text-align: center;
+          padding: 20px;
+          background: #f8f9fa;
+          border-radius: 8px;
+          color: #666;
+      }
+
+      .repair-type-item {
+          background: #f8f9fa;
+          padding: 10px;
+          border-radius: 4px;
+          border: 1px solid #e9ecef;
+      }
+
+      .repair-type-item label {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          cursor: pointer;
+      }
+
+      .repair-columns {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+      }
+
+      .repair-column {
+          background: #fff;
+          padding: 15px;
+          border-radius: 8px;
+          border: 1px solid #eee;
+      }
+
+      .search-box {
+          margin-bottom: 15px;
+      }
+
+      .part-search {
+          width: 100%;
+          padding: 8px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 14px;
+      }
+
+      .total-section {
+          margin-top: 20px;
+          padding: 15px;
+          background: #f8f9fa;
+          border-radius: 8px;
+          border: 1px solid #e9ecef;
+      }
+
+      .total-item {
+          display: flex;
+          justify-content: space-between;
+          padding: 5px 0;
+      }
+
+      .grand-total {
+          margin-top: 10px;
+          padding-top: 10px;
+          border-top: 2px solid #dee2e6;
+          font-weight: bold;
+          font-size: 1.1em;
+      }
+
+      .labor-total, .parts-total, .total-amount {
+          color: #dc3545;
+          font-weight: bold;
+      }
+
+      .price-details {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+      }
+
+      .price-label {
+          color: #666;
+          font-size: 0.9em;
+      }
+
+      @media (max-width: 768px) {
+          .repair-columns {
+              grid-template-columns: 1fr;
+          }
+      }
+  </style>
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <div class="container">
+      <div class="page-header">
+          <h1>สร้างงานซ่อมใหม่</h1>
+      </div>
+
+      <div class="repair-form">
+          <form id="createRepairForm">
+              <!-- ข้อมูลลูกค้า -->
+              <div class="form-section">
+                  <h2>ข้อมูลลูกค้า</h2>
+                  <div class="form-group">
+                      <label for="customer_first_name">ชื่อ:</label>
+                      <input type="text" id="customer_first_name" name="customer_first_name" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="customer_last_name">นามสกุล:</label>
+                      <input type="text" id="customer_last_name" name="customer_last_name" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="customer_phone">เบอร์โทรศัพท์:</label>
+                      <input type="text" id="customer_phone" name="customer_phone" pattern="[0-9]{10}" required>
+                  </div>
+              </div>
+              <!-- รายการซ่อม -->
+              <div id="repair-items-container">
+               <div class="repair-item" data-index="0">
+                   <div class="form-section">
+                       <div class="section-header">
+                           <h2>รายการซ่อมที่ 1</h2>
+                           <button type="button" class="btn-remove-item" style="display: none;">
+                               <i class="ri-delete-bin-line"></i> ลบรายการ
+                           </button>
+                       </div>
+                       
+
+                       <div class="repair-columns">
+                           <!-- คอลัมน์ซ้าย -->
+                           <div class="repair-column">
+                               <div class="form-group">
+                                   <label>ประเภทอุปกรณ์:</label>
+                                   <select class="device-type-select" name="repairs[0][device_type_id]" required>
+                                       <option value="">เลือกประเภทอุปกรณ์</option>
+                                       <% deviceTypes.forEach(type => { %>
+                                           <option value="<%= type.id %>"><%= type.name %></option>
+                                       <% }); %>
+                                   </select>
+                               </div>
+
+                               <div class="form-group">
+                                   <label>รายละเอียดอุปกรณ์:</label>
+                                   <textarea name="repairs[0][device_description]" 
+                                           class="device-description"
+                                           rows="3" required 
+                                           placeholder="กรุณาระบุรายละเอียดอุปกรณ์ เช่น ยี่ห้อ รุ่น อาการเสีย"></textarea>
+                               </div>
+
+                               <div class="form-group">
+                                   <label>รายการซ่อม:</label>
+                                   <div class="repair-types-grid">
+                                       <% repairTypes.forEach(type => { %>
+                                           <div class="repair-type-item">
+                                               <input type="checkbox" 
+                                                      id="repair_type_0_<%= type.id %>" 
+                                                      name="repairs[0][repair_types][]" 
+                                                      value="<%= type.id %>"
+                                                      data-price="<%= type.estimated_price %>">
+                                               <label for="repair_type_0_<%= type.id %>">
+                                                   <%= type.name %>
+                                                   <div class="price-details">
+                                                       <span class="price-label">ค่าแรง:</span>
+                                                       <span class="price">฿<%= type.estimated_price.toLocaleString() %></span>
+                                                   </div>
+                                               </label>
+                                           </div>
+                                       <% }); %>
+                                   </div>
+
+                                   <!-- แสดงราคารวม -->
+                                   <div class="total-section">
+                                       <div class="total-item">
+                                           <span>ค่าแรงรวม:</span>
+                                           <span class="labor-total">฿0</span>
+                                       </div>
+                                       <div class="total-item">
+                                           <span>ค่าอะไหล่รวม:</span>
+                                           <span class="parts-total">฿0</span>
+                                       </div>
+                                       <div class="total-item grand-total">
+                                           <span>ราคารวมทั้งหมด:</span>
+                                           <span class="total-amount">฿0</span>
+                                       </div>
+                                   </div>
+                               </div>
+                           </div>
+
+                           <!-- คอลัมน์ขวา -->
+                           <div class="repair-column">
+                               <div class="form-group parts-section">
+                                   <label>อะไหล่ที่มีในสต็อก:</label>
+                                   <div class="search-box">
+                                       <input type="text" placeholder="ค้นหาอะไหล่..." class="part-search">
+                                   </div>
+                                   <div class="parts-grid">
+                                       <% parts.forEach(part => { %>
+                                           <div class="part-card">
+                                               <div class="part-checkbox">
+                                                   <input type="checkbox" 
+                                                          id="part_0_<%= part.id %>" 
+                                                          name="repairs[0][parts][]" 
+                                                          value="<%= part.id %>"
+                                                          data-price="<%= part.price %>">
+                                               </div>
+                                               <div class="part-info">
+                                                   <h3 class="part-name"><%= part.name %></h3>
+                                                   <p class="part-description"><%= part.description %></p>  
+                                                   <div class="part-details">
+                                                       <span class="stock">สต็อก: <span class="stock-quantity"><%= part.stock_quantity %></span> ชิ้น</span>
+                                                       <span class="price">ราคา: ฿<span class="part-price"><%= part.price.toLocaleString() %></span></span>
+                                                   </div>
+                                                   <div class="part-quantity" style="display: none;">
+                                                       <label>จำนวน:</label>
+                                                       <input type="number" 
+                                                              name="repairs[0][parts_quantity][]" 
+                                                              min="1" 
+                                                              max="<%= part.stock_quantity %>" 
+                                                              value="1" 
+                                                              class="quantity-input">
+                                                   </div>
+                                               </div>
+                                           </div>
+                                       <% }); %>
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+
+           <!-- ปุ่มเพิ่มรายการซ่อม -->
+           <div class="form-actions">
+               <button type="button" id="addRepairItem" class="btn-secondary">
+                   <i class="ri-add-line"></i> เพิ่มรายการซ่อม
+               </button>
+           </div>
+
+           <!-- ปุ่มบันทึก/ยกเลิก -->
+           <div class="form-actions">
+               <button type="submit" class="btn-primary">
+                   <i class="ri-save-line"></i> บันทึก
+               </button>
+               <a href="/repair/list" class="btn-secondary">
+                   <i class="ri-arrow-left-line"></i> ยกเลิก
+               </a>
+           </div>
+       </form>
+   </div>
+</div>
+
+<script src="/js/repair.js"></script>
+</body>
+</html>

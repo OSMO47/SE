@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายละเอียดงานซ่อม</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/repair.css">
+</head>
+<body>
+    <%- include('../partials/header') %>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>รายละเอียดงานซ่อม: <%= repair.repair_code %></h1>
+            <a href="/repair/list" class="btn-secondary">
+                <i class="ri-arrow-left-line"></i> กลับ
+            </a>
+        </div>
+
+        <div class="repair-detail-grid">
+            <div class="detail-card">
+                <h2>ข้อมูลลูกค้า</h2>
+                <div class="detail-content">
+                    <p><strong>ชื่อ-สกุล:</strong> <%= repair.customer_first_name %> <%= repair.customer_last_name %></p>
+                    <p><strong>เบอร์โทร:</strong> <%= repair.phone_number %></p>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <h2>ข้อมูลอุปกรณ์</h2>
+                <div class="detail-content">
+                    <p><strong>ประเภท:</strong> <%= repair.device_type %></p>
+                    <p><strong>รายละเอียด:</strong> <%= repair.device_description %></p>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <h2>สถานะงานซ่อม</h2>
+                <div class="detail-content">
+                    <p><strong>สถานะปัจจุบัน:</strong> <%= repair.status_name %></p>
+                    <p><strong>ช่างซ่อม:</strong> <%= repair.mechanic_name ? repair.mechanic_name + ' ' + repair.mechanic_last_name : '-' %></p>
+                    <p><strong>วันที่รับงาน:</strong> <%= new Date(repair.created_at).toLocaleDateString('th-TH') %></p>
+                </div>
+            </div>
+<!-- เพิ่มส่วนแสดงรายการอะไหล่ -->
+<div class="detail-card full-width">
+    <h2>รายการอะไหล่ที่ใช้</h2>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>รายการ</th>
+                    <th>ราคาต่อชิ้น</th>
+                    <th>จำนวน</th>
+                    <th>ราคารวม</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% let totalPartsPrice = 0 %>
+                <% parts.forEach(part => { %>
+                    <tr>
+                        <td><%= part.part_name %></td>
+                        <td class="text-right"><%= part.unit_price.toLocaleString() %> บาท</td>
+                        <td class="text-center"><%= part.quantity %></td>
+                        <td class="text-right">
+                            <%= part.total_price.toLocaleString() %> บาท
+                            <% totalPartsPrice += part.total_price %>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-right"><strong>รวมค่าอะไหล่</strong></td>
+                    <td class="text-right"><strong><%= totalPartsPrice.toLocaleString() %> บาท</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<!-- เพิ่มส่วนแสดงรายการซ่อม -->
+<div class="detail-card full-width">
+    <h2>รายการซ่อม</h2>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>รายการ</th>
+                    <th>ราคา</th>
+                    <th>หมายเหตุ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% let totalRepairPrice = 0 %>
+                <% repairItems.forEach(item => { %>
+                    <tr>
+                        <td><%= item.repair_name %></td>
+                        <td class="text-right">
+                            <%= item.price.toLocaleString() %> บาท
+                            <% totalRepairPrice += item.price %>
+                        </td>
+                        <td><%= item.note || '-' %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2" class="text-right"><strong>รวมค่าซ่อม</strong></td>
+                    <td class="text-right"><strong><%= totalRepairPrice.toLocaleString() %> บาท</strong></td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="text-right"><strong>ราคารวมทั้งหมด</strong></td>
+                    <td class="text-right"><strong><%= (totalPartsPrice + totalRepairPrice).toLocaleString() %> บาท</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+            <div class="detail-card full-width">
+                <h2>ประวัติการอัพเดตสถานะ</h2>
+                <div class="timeline">
+                    <% history.forEach(item => { %>
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-date">
+                                    <%= new Date(item.created_at).toLocaleDateString('th-TH') %>
+                                    <%= new Date(item.created_at).toLocaleTimeString('th-TH') %>
+                                </div>
+                                <p><strong>สถานะ:</strong> <%= item.status_name %></p>
+                                <% if (item.first_name) { %>
+                                    <p><strong>โดย:</strong> <%= item.first_name %> <%= item.last_name %></p>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>

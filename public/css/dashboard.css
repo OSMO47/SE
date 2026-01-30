@@ -1,0 +1,268 @@
+/* Container and General Layout */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: calc(100vh - 64px);
+    background: #f8fafc;
+}
+
+/* Dashboard Stats */
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%; /* ทำให้ card มีความสูงเท่ากัน */
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 24px;
+    flex-shrink: 0; /* ป้องกันไอคอนหด */
+}
+
+.stat-info {
+    flex-grow: 1;
+    min-width: 0; /* ป้องกันเนื้อหาล้น */
+}
+
+.stat-info h3 {
+    margin: 0;
+    font-size: clamp(18px, 2vw, 24px); /* Responsive font size */
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stat-info p {
+    margin: 5px 0 0;
+    color: #64748b;
+    font-size: clamp(14px, 1.5vw, 16px);
+}
+
+/* Table Container with Fixed Header */
+.table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin: 20px 0;
+    max-height: calc(100vh - 350px); /* ปรับความสูงอัตโนมัติ */
+    overflow: auto;
+    position: relative;
+}
+
+/* Custom Scrollbar */
+.table-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Table Styles */
+.table-container table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table-container thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #f8fafc;
+}
+
+.table-container th {
+    padding: 16px;
+    background: #f8fafc;
+    color: #1e293b;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.table-container td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #475569;
+}
+
+.table-container tr:last-child td {
+    border-bottom: none;
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.action-button {
+    background: white;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1e293b;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.action-button:hover {
+    background: #f8fafc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.action-button i {
+    margin-right: 10px;
+    font-size: 20px;
+    color: #3b82f6;
+}
+
+/* Welcome Message */
+.welcome-message {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    padding: 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.welcome-message h1 {
+    margin: 0;
+    font-size: clamp(20px, 2.5vw, 28px);
+}
+.recent-repairs h2 {
+    font-size: clamp(24px, 2vw, 32px);
+    margin: auto;
+    margin-top: 50px;
+    font-weight: 600;
+    color: rgb(0, 0, 0);
+    text-align: left;
+
+}
+
+.welcome-message p {
+    margin: 8px 0 0;
+    opacity: 0.9;
+    font-size: clamp(14px, 1.5vw, 16px);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+    .dashboard-stats {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .quick-actions {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 16px;
+    }
+
+    .dashboard-stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .stat-card {
+        padding: 16px;
+    }
+
+    .table-container {
+        max-height: calc(100vh - 400px);
+    }
+
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .action-button {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+        min-height: auto;
+    }
+
+    .table-container {
+        margin: 16px 0;
+        max-height: calc(100vh - 450px);
+    }
+
+    .table-container th,
+    .table-container td {
+        padding: 12px;
+        font-size: 14px;
+    }
+}
+/* Logout Button Style */
+.logout-button {
+    background: #fee2e2; /* พื้นหลังสีแดงอ่อน */
+    color: #dc2626; /* ตัวอักษรสีแดง */
+    border: 1px solid #fecaca;
+}
+
+.logout-button i {
+    color: #dc2626; /* ไอคอนสีแดง */
+}
+
+.logout-button:hover {
+    background: #fecaca; /* สีพื้นหลังเมื่อ hover */
+    border-color: #dc2626;
+}

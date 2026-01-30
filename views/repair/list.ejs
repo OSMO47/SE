@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายการงานซ่อม</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/repair.css">
+    <style>
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .status-badge.pending { background: #fff8e1; color: #b45309; }
+        .status-badge.progress { background: #e3f2fd; color: #1976d2; }
+        .status-badge.waiting { background: #fef2f2; color: #dc2626; }
+        .status-badge.completed { background: #ecfdf5; color: #059669; }
+        .status-badge.delivered { background: #f3e8ff; color: #7e22ce; }
+        .status-badge.cancelled { background: #f3f4f6; color: #4b5563; }
+
+        .action-buttons {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+        }
+
+        .btn-view, 
+        .btn-accept, 
+        .btn-update {
+            padding: 6px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-view { background: #e2e8f0; color: #475569; }
+        .btn-accept { background: #dcfce7; color: #059669; }
+        .btn-update { background: #3b82f6; color: white; }
+
+        .btn-view:hover { background: #cbd5e1; }
+        .btn-accept:hover { background: #bbf7d0; }
+        .btn-update:hover { background: #2563eb; }
+
+        /* สำหรับปุ่มที่ถูก disable */
+        .btn-view:disabled,
+        .btn-accept:disabled,
+        .btn-update:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* เพิ่ม pointer เมื่อ hover */
+        .btn-view, 
+        .btn-accept, 
+        .btn-update {
+            cursor: pointer;
+        }
+
+        /* เพิ่ม active state */
+        .btn-view:active,
+        .btn-accept:active,
+        .btn-update:active {
+            transform: scale(0.95);
+        }
+
+        /* ปรับขนาดไอคอน */
+        .btn-view i,
+        .btn-accept i,
+        .btn-update i {
+            font-size: 1.2em;
+            line-height: 1;
+            display: block;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            margin: 40px auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+            padding: 0 24px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+
+        .form-actions {
+            padding: 16px 24px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        .btn-payment { 
+    background: #fef3c7; 
+    color: #92400e;
+    padding: 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-payment:hover { 
+    background: #fde68a;
+}
+.btn-payment:active {
+    transform: scale(0.95);
+}
+.btn-payment i {
+    font-size: 1.2em;
+    line-height: 1;
+    display: block;
+}
+    </style>
+</head>
+<body>
+    <%- include('../partials/header') %>
+    <div class="page-header">
+        <div class="header-left">
+            <a href="/dashboard" class="btn-secondary">
+                <i class="ri-home-4-line"></i> หน้าหลัก
+            </a>
+        </div>
+    </div>
+    <div class="container">
+        <div class="page-header">
+            <h1>รายการงานซ่อม</h1>
+            <a href="/repair/create" class="btn-primary">
+                <i class="ri-add-line"></i> สร้างงานใหม่
+            </a>
+        </div>
+        
+        <div class="table-container">
+            <table class="repair-table">
+                <thead>
+                    <tr>
+                        <th>รหัสซ่อม</th>
+                        <th>ลูกค้า</th>
+                        <th>เบอร์โทร</th>
+                        <th>อุปกรณ์</th>
+                        <th>สถานะ</th>
+                        <th>ช่างซ่อม</th>
+                        <th>วันที่</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% repairs.forEach(repair => { %>
+                        <tr>
+                            <td><%= repair.repair_code %></td>
+                            <td><%= repair.first_name %> <%= repair.last_name %></td>
+                            <td><%= repair.phone_number %></td>
+                            <td><%= repair.device_type %></td>
+                            <td>
+                                <span class="status-badge <%= 
+                                    repair.status_id === 1 ? 'pending' : 
+                                    repair.status_id === 2 ? 'progress' : 
+                                    repair.status_id === 3 ? 'waiting' :
+                                    repair.status_id === 4 ? 'completed' :
+                                    repair.status_id === 5 ? 'delivered' :
+                                    'cancelled' %>">
+                                    <%= repair.status_name %>
+                                </span>
+                            </td>
+                            <td><%= repair.mechanic_name || '-' %></td>
+                            <td><%= new Date(repair.created_at).toLocaleDateString('th-TH') %></td>
+                           
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="/repair/detail/<%= repair.repair_code %>" class="btn-view" title="ดูรายละเอียด">
+                                        <i class="ri-eye-line"></i>
+                                    </a>
+                                    <% if (repair.status_id === 1) { %>
+                                        <!-- ปุ่มรับงาน -->
+                                        <button onclick="acceptRepair('<%= repair.id %>')" class="btn-accept" title="รับงาน">
+                                            <i class="ri-check-line"></i>
+                                        </button>
+                                    <% } %>
+                                    <% if (repair.status_id === 2 || repair.status_id === 3) { %>
+                                        <!-- ปุ่มอัพเดตสถานะ -->
+                                        <button onclick="showUpdateModal('<%= repair.id %>', '<%= repair.status_id %>')" class="btn-update" title="อัพเดตสถานะ">
+                                            <i class="ri-edit-line"></i>
+                                        </button>
+                                    <% } %>
+                                    <% if (repair.status_id === 4) { %>
+                                        <% if (!repair.is_paid) { %>
+                                            <!-- ถ้ายังไม่ได้ชำระเงิน แสดงปุ่มชำระเงิน -->
+                                            <button onclick="showPaymentModal('<%= repair.id %>')" class="btn-payment" title="ชำระเงิน">
+                                                <i class="ri-money-dollar-circle-line"></i>
+                                            </button>
+                                        <% } else { %>
+                                            <!-- ถ้าชำระเงินแล้ว แสดงปุ่มอัพเดตสถานะ -->
+                                            <button onclick="showUpdateModal('<%= repair.id %>', '<%= repair.status_id %>')" class="btn-update" title="อัพเดตสถานะ">
+                                                <i class="ri-edit-line"></i>
+                                            </button>
+                                        <% } %>
+                                    <% } %>
+                                </div>
+                            </td>
+                                 </tr>
+                        <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal อัพเดตสถานะ -->
+    <div id="updateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>อัพเดตสถานะงาน</h2>
+                <button type="button" class="close-button" onclick="closeUpdateModal()">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <form id="updateForm" onsubmit="return handleUpdate(event)">
+                <input type="hidden" id="update_repair_id" name="repair_id">
+                <div class="form-group">
+                    <label for="status">สถานะ:</label>
+                    <select id="status" name="status_id" required>
+                        <option value="2">กำลังซ่อม</option>
+                        <option value="3">รออะไหล่</option>
+                        <option value="4">ซ่อมเสร็จ</option>
+                        <option value="6">ยกเลิก</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="notes">รายละเอียดเพิ่มเติม:</label>
+                    <textarea id="notes" name="notes" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">บันทึก</button>
+                    <button type="button" class="btn-secondary" onclick="closeUpdateModal()">ยกเลิก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal ชำระเงิน -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>ชำระเงิน</h2>
+                <button class="close-button" onclick="closePaymentModal()">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <form id="paymentForm" onsubmit="return handlePayment(event)">
+                <input type="hidden" id="payment_repair_id" name="repair_id">
+                <div class="form-group">
+                    <label>ยอดรวม:</label>
+                    <div id="totalAmount" class="total-amount"></div>
+                </div>
+                <div class="form-group">
+                    <label for="payment_method">วิธีชำระเงิน:</label>
+                    <select id="payment_method" name="payment_method_id" required>
+                        <option value="1">เงินสด</option>
+                        <option value="2">โอนเงิน</option>
+                        <option value="3">บัตรเครดิต</option>
+                    </select>
+                </div>
+                <div id="referenceNoGroup" class="form-group" style="display: none;">
+                    <label for="reference_no">เลขที่อ้างอิง/สลิป:</label>
+                    <input type="text" id="reference_no" name="reference_no">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">ยืนยันการชำระเงิน</button>
+                    <button type="button" class="btn-secondary" onclick="closePaymentModal()">ยกเลิก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function acceptRepair(repairId) {
+            if (confirm('ยืนยันการรับงานซ่อมนี้?')) {
+                fetch('/repair/accept', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ repairId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.status === 'waiting') {
+                            let message = 'รับงานสำเร็จ (สถานะ: รออะไหล่)\n\n';
+                            if (data.parts && data.parts.length > 0) {
+                                message += 'อะไหล่ที่ต้องเติมสต็อก:\n';
+                                data.parts.forEach(part => {
+                                    message += `- ${part.name} (เหลือ ${part.stock_quantity}/${part.min_quantity})\n`;
+                                });
+                            }
+                            alert(message);
+                        } else {
+                            alert('รับงานสำเร็จ');
+                        }
+                        location.reload();
+                    } else {
+                        alert(data.message || 'เกิดข้อผิดพลาด');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('เกิดข้อผิดพลาดในการรับงาน');
+                });
+            }
+        }
+
+        function showUpdateModal(repairId, currentStatus) {
+            document.getElementById('update_repair_id').value = repairId;
+            const statusSelect = document.getElementById('status');
+            statusSelect.value = currentStatus;
+            
+            // ปรับตัวเลือกตามลำดับ
+            Array.from(statusSelect.options).forEach(option => {
+                const optionValue = parseInt(option.value);
+                const currentStatusValue = parseInt(currentStatus);
+                option.disabled = optionValue < currentStatusValue || 
+                                (currentStatusValue === 5) || 
+                                (optionValue === 6 && currentStatusValue < 4);
+            });
+            
+            document.getElementById('updateModal').style.display = 'block';
+        }
+
+        function closeUpdateModal() {
+            document.getElementById('updateModal').style.display = 'none';
+            document.getElementById('updateForm').reset();
+        }
+
+        function handleUpdate(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {
+                repair_id: formData.get('repair_id'),
+                status_id: formData.get('status_id'),
+                notes: formData.get('notes')
+            };
+
+            if (['5', '6'].includes(data.status_id)) {
+                if (!confirm('ยืนยันการเปลี่ยนสถานะ?\nการเปลี่ยนแปลงนี้ไม่สามารถย้อนกลับได้')) {
+                    return false;
+                }
+            }
+
+            fetch('/repair/update-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('อัพเดตสถานะสำเร็จ');
+                    location.reload();
+                } else {
+                    alert(data.message || 'เกิดข้อผิดพลาด');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('เกิดข้อผิดพลาดในการอัพเดตสถานะ');
+            });
+
+            return false;
+        }
+
+        window.onclick = function(event) {
+            if (event.target === document.getElementById('updateModal')) {
+                closeUpdateModal();
+            }
+            if (event.target === document.getElementById('paymentModal')) {
+                closePaymentModal();
+            }
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+            document.getElementById('paymentForm').reset();
+        }
+        // ในไฟล์ list.ejs ส่วน <script>
+function showPaymentModal(repairId) {
+    // เซ็ต repair_id ใน modal
+    document.getElementById('payment_repair_id').value = repairId;
+    
+    // เรียก API เพื่อดึงยอดเงินรวม
+    fetch(`/repair/get-total/${repairId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // แสดงยอดเงินในรูปแบบสกุลเงินไทย
+                document.getElementById('totalAmount').textContent = 
+                    data.total.toLocaleString('th-TH', {
+                        style: 'currency',
+                        currency: 'THB'
+                    });
+                
+                // แสดง modal
+                document.getElementById('paymentModal').style.display = 'block';
+                
+                // เพิ่ม event listener สำหรับการเลือกวิธีชำระเงิน
+                document.getElementById('payment_method').addEventListener('change', function(e) {
+                    const referenceNoGroup = document.getElementById('referenceNoGroup');
+                    // แสดงช่องกรอกเลขอ้างอิงเมื่อเลือกโอนเงินหรือบัตรเครดิต
+                    referenceNoGroup.style.display = e.target.value === '1' ? 'none' : 'block';
+                });
+            } else {
+                alert(data.message || 'เกิดข้อผิดพลาดในการดึงข้อมูล');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('เกิดข้อผิดพลาดในการดึงข้อมูล');
+        });
+}
+        function handlePayment(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {
+                repair_id: formData.get('repair_id'),
+                payment_method_id: formData.get('payment_method_id'),
+                reference_no: formData.get('reference_no')
+            };
+
+            fetch('/repair/payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('บันทึกการชำระเงินสำเร็จ');
+                    location.reload();
+                } else {
+                    alert(data.message || 'เกิดข้อผิดพลาด');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('เกิดข้อผิดพลาดในการบันทึกการชำระเงิน');
+            });
+
+            return false;
+        }
+    </script>
+</body>
+</html>

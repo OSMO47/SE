@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css">
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <i class="ri-tools-fill"></i>
+                <h1>ระบบจัดการร้านซ่อม</h1>
+            </div>
+            <form action="/login" method="POST">
+                <div class="form-group">
+                    <label for="username">ชื่อผู้ใช้</label>
+                    <input type="text" id="username" name="username" required>
+                    <i class="ri-user-line input-icon"></i>
+                </div>
+                <div class="form-group">
+                    <label for="password">รหัสผ่าน</label>
+                    <input type="password" id="password" name="password" required>
+                    <i class="ri-eye-off-line input-icon" onclick="togglePassword()"></i>
+                </div>
+                <button type="submit" class="btn-primary">
+                    เข้าสู่ระบบ
+                    <i class="ri-login-circle-line"></i>
+                </button>
+            </form>
+            <div class="auth-links">
+                <p>ยังไม่มีบัญชี? <a href="/register">สมัครสมาชิก</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const icon = event.target;
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.replace('ri-eye-off-line', 'ri-eye-line');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.replace('ri-eye-line', 'ri-eye-off-line');
+            }
+        }
+
+        // Add hover effect to form groups
+        document.querySelectorAll('.form-group').forEach(group => {
+            const input = group.querySelector('input');
+            const icon = group.querySelector('.input-icon');
+
+            input.addEventListener('focus', () => {
+                if (icon) icon.style.color = '#4CAF50';
+            });
+
+            input.addEventListener('blur', () => {
+                if (icon) icon.style.color = '#aaa';
+            });
+        });
+    </script>
+</body>
+</html>

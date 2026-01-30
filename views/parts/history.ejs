@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ประวัติการเบิก-รับอะไหล่</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .page-header h1 {
+            font-size: 1.75rem;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        /* Search and Filter Section */
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .filter-select, .date-input {
+            padding: 10px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            min-width: 140px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-select:focus, .date-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        /* Table Styles */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .history-table th {
+            background: #f8fafc;
+            padding: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .history-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background-color 0.2s ease;
+        }
+
+        .history-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Transaction Tags */
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .tag.รับ {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .tag.เบิก {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Repair Link */
+        .repair-link {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s ease;
+        }
+
+        .repair-link:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+
+        /* Back Button */
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: #64748b;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .filter-section {
+                flex-direction: column;
+            }
+
+            .filter-group {
+                flex-wrap: wrap;
+            }
+
+            .filter-select, .date-input {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .history-table th,
+            .history-table td {
+                padding: 12px;
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/header') %>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>ประวัติการเบิก-รับอะไหล่</h1>
+            <a href="/parts/inventory" class="btn-secondary">
+                <i class="ri-arrow-left-line"></i> กลับ
+            </a>
+        </div>
+
+        <div class="filter-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" class="search-input" 
+                       placeholder="ค้นหาจากชื่ออะไหล่..." autocomplete="off">
+            </div>
+            <div class="filter-group">
+                <select id="typeFilter" class="filter-select">
+                    <option value="">ทั้งหมด</option>
+                    <option value="รับ">รับเข้า</option>
+                    <option value="เบิก">เบิกออก</option>
+                </select>
+                <input type="date" id="dateFilter" class="date-input">
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>วันที่-เวลา</th>
+                        <th>ประเภท</th>
+                        <th>อะไหล่</th>
+                        <th>จำนวน</th>
+                        <th>ผู้ดำเนินการ</th>
+                        <th>รหัสซ่อม</th>
+                        <th>หมายเหตุ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (history && history.length > 0) { %>
+                        <% history.forEach(record => { %>
+                            <tr>
+                                <td><%= new Date(record.created_at).toLocaleString('th-TH') %></td>
+                                <td>
+                                    <span class="tag <%= record.transaction_type %>">
+                                        <%= record.transaction_type %>
+                                    </span>
+                                </td>
+                                <td><%= record.part_name %></td>
+                                <td><%= record.quantity %></td>
+                                <td><%= record.mechanic_name %> <%= record.mechanic_lastname %></td>
+                                <td>
+                                    <% if (record.repair_code) { %>
+                                        <a href="/repair/detail/<%= record.repair_code %>" class="repair-link">
+                                            <%= record.repair_code %>
+                                            <i class="ri-external-link-line"></i>
+                                        </a>
+                                    <% } else { %>
+                                        -
+                                    <% } %>
+                                </td>
+                                <td><%= record.notes || '-' %></td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <i class="ri-inbox-line"></i>
+                                    <p>ไม่พบรายการประวัติ</p>
+                                </div>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const typeFilter = document.getElementById('typeFilter');
+        const dateFilter = document.getElementById('dateFilter');
+        const tableRows = document.querySelectorAll('.history-table tbody tr');
+
+        function filterTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const type = typeFilter.value;
+            const date = dateFilter.value ? new Date(dateFilter.value) : null;
+            let visibleCount = 0;
+
+            tableRows.forEach(row => {
+                if (row.querySelector('.empty-state')) return;
+
+                const partName = row.children[2].textContent.toLowerCase();
+                const transactionType = row.querySelector('.tag')?.textContent.trim();
+                const rowDate = new Date(row.children[0].textContent);
+
+                const matchesSearch = partName.includes(searchTerm);
+                const matchesType = !type || transactionType === type;
+                const matchesDate = !date || (
+                    rowDate.getFullYear() === date.getFullYear() && 
+                    rowDate.getMonth() === date.getMonth() && 
+                    rowDate.getDate() === date.getDate()
+                );
+
+                const isVisible = matchesSearch && matchesType && matchesDate;
+                row.style.display = isVisible ? '' : 'none';
+                if (isVisible) visibleCount++;
+            });
+
+            // Show empty state if no results
+            const tbody = document.querySelector('.history-table tbody');
+            const existingEmpty = tbody.querySelector('.empty-message');
+            
+            if (visibleCount === 0 && !existingEmpty) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.className = 'empty-message';
+                emptyRow.innerHTML = `
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <i class="ri-search-line"></i>
+                            <p>ไม่พบรายการที่ค้นหา</p>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(emptyRow);
+            } else if (visibleCount > 0 && existingEmpty) {
+                existingEmpty.remove();
+            }
+        }
+
+        searchInput.addEventListener('input', filterTable);
+        typeFilter.addEventListener('change', filterTable);
+        dateFilter.addEventListener('change', filterTable);
+    </script>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายละเอียดงานซ่อม</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/repair.css">
+</head>
+<body>
+    <%- include('../partials/header') %>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>รายละเอียดงานซ่อม: <%= repair.repair_code %></h1>
+            <a href="/repair/list" class="btn-secondary">
+                <i class="ri-arrow-left-line"></i> กลับ
+            </a>
+        </div>
+        
+        <div class="repair-detail-grid">
+            <div class="detail-card">
+                <h2>ข้อมูลลูกค้า</h2>
+                <div class="detail-content">
+                    <p><strong>ชื่อ-สกุล:</strong> <%= repair.customer_first_name %> <%= repair.customer_last_name %></p>
+                    <p><strong>เบอร์โทร:</strong> <%= repair.phone_number %></p>
+                </div>
+            </div>
+            
+            <div class="detail-card">
+                <h2>ข้อมูลอุปกรณ์</h2>
+                <div class="detail-content">
+                    <p><strong>ประเภท:</strong> <%= repair.device_type %></p>
+                    <p><strong>รายละเอียด:</strong> <%= repair.device_description %></p>
+                </div>
+            </div>
+            
+            <div class="detail-card">
+                <h2>สถานะงานซ่อม</h2>
+                <div class="detail-content">
+                    <p><strong>สถานะปัจจุบัน:</strong> <%= repair.status_name %></p>
+                    <p><strong>ช่างซ่อม:</strong> <%= repair.mechanic_name ? repair.mechanic_name + ' ' + repair.mechanic_last_name : '-' %></p>
+                    <p><strong>วันที่รับงาน:</strong> <%= new Date(repair.created_at).toLocaleDateString('th-TH') %></p>
+                </div>
+            </div>
+
+            <!-- ส่วนค่าซ่อมและค่าอะไหล่ -->
+            <div class="detail-card">
+                <h2>ค่าซ่อมและค่าอะไหล่</h2>
+                <div class="repair-items">
+                    <!-- ส่วนค่าแรง -->
+                    <div class="price-section">
+                        <h3>ค่าแรง</h3>
+                        <table class="repair-items-table">
+                            <thead>
+                                <tr>
+                                    <th>รายการ</th>
+                                    <th class="text-right">ราคา</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (repair_items && repair_items.length > 0) { %>
+                                    <% repair_items.forEach(item => { %>
+                                        <tr>
+                                            <td><%= item.repair_type_name %></td>
+                                            <td class="text-right">฿<%= item.price.toLocaleString('th-TH', {minimumFractionDigits: 2}) %></td>
+                                        </tr>
+                                    <% }); %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="2" class="text-center">ไม่มีรายการซ่อม</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- ส่วนค่าอะไหล่ -->
+                    <div class="price-section">
+                        <h3>ค่าอะไหล่</h3>
+                        <table class="repair-items-table">
+                            <thead>
+                                <tr>
+                                    <th>รายการ</th>
+                                    <th class="text-center">จำนวน</th>
+                                    <th class="text-right">ราคาต่อชิ้น</th>
+                                    <th class="text-right">รวม</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (parts && parts.length > 0) { %>
+                                    <% parts.forEach(part => { %>
+                                        <tr>
+                                            <td><%= part.name %></td>
+                                            <td class="text-center"><%= part.quantity %> ชิ้น</td>
+                                            <td class="text-right">฿<%= part.price.toLocaleString('th-TH', {minimumFractionDigits: 2}) %></td>
+                                            <td class="text-right">฿<%= (part.price * part.quantity).toLocaleString('th-TH', {minimumFractionDigits: 2}) %></td>
+                                        </tr>
+                                    <% }); %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="4" class="text-center">ไม่มีรายการอะไหล่</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- สรุปราคารวม -->
+                    <div class="total-summary">
+                        <% 
+                            const laborTotal = repair_items.reduce((sum, item) => sum + parseFloat(item.price), 0);
+                            const partsTotal = parts.reduce((sum, part) => sum + (part.price * part.quantity), 0);
+                            const grandTotal = laborTotal + partsTotal;
+                        %>
+                        <div class="summary-row">
+                            <span>รวมค่าแรง:</span>
+                            <span class="amount">฿<%= laborTotal.toLocaleString('th-TH', {minimumFractionDigits: 2}) %></span>
+                        </div>
+                        <div class="summary-row">
+                            <span>รวมค่าอะไหล่:</span>
+                            <span class="amount">฿<%= partsTotal.toLocaleString('th-TH', {minimumFractionDigits: 2}) %></span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>ราคารวมทั้งหมด:</span>
+                            <span class="amount">฿<%= grandTotal.toLocaleString('th-TH', {minimumFractionDigits: 2}) %></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ส่วนรายละเอียดการชำระเงิน -->
+            <div class="detail-card">
+                <h2>รายละเอียดการชำระเงิน</h2>
+                <div class="payment-details">
+                    <% if (payment) { %>
+                        <div class="payment-status <%= payment.payment_status === 'completed' ? 'completed' : 'pending' %>">
+                            <i class="ri-checkbox-circle-line"></i>
+                            <span><%= payment.payment_status === 'completed' ? 'ชำระเงินแล้ว' : 'รอชำระเงิน' %></span>
+                        </div>
+                        <div class="payment-info">
+                            <p><strong>จำนวนเงิน:</strong> ฿<%= payment.amount.toLocaleString('th-TH', {minimumFractionDigits: 2}) %></p>
+                            <p><strong>วิธีชำระเงิน:</strong> <%= payment.method_name %></p>
+                            <% if (payment.reference_no) { %>
+                                <p><strong>เลขที่อ้างอิง/สลิป:</strong> <%= payment.reference_no %></p>
+                            <% } %>
+                            <p><strong>วันที่ชำระ:</strong> <%= new Date(payment.payment_date).toLocaleDateString('th-TH') %></p>
+                            <p><strong>ผู้รับชำระ:</strong> <%= payment.mechanic_name %> <%= payment.mechanic_last_name %></p>
+                        </div>
+                    <% } else { %>
+                        <div class="payment-status pending">
+                            <i class="ri-time-line"></i>
+                            <span>ยังไม่มีการชำระเงิน</span>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+            
+            <!-- ส่วนประวัติการอัพเดตสถานะ -->
+            <div class="detail-card full-width">
+                <h2>ประวัติการอัพเดตสถานะ</h2>
+                <div class="timeline">
+                    <% history.forEach(item => { %>
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-date">
+                                    <%= new Date(item.created_at).toLocaleDateString('th-TH') %>
+                                    <%= new Date(item.created_at).toLocaleTimeString('th-TH') %>
+                                </div>
+                                <p><strong>สถานะ:</strong> <%= item.status_name %></p>
+                                <% if (item.first_name) { %>
+                                    <p><strong>โดย:</strong> <%= item.first_name %> <%= item.last_name %></p>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    /* CSS สำหรับการแสดงผล */
+    .price-section {
+        margin-bottom: 20px;
+    }
+
+    .price-section h3 {
+        color: #374151;
+        font-size: 1.1em;
+        margin-bottom: 10px;
+        padding-bottom: 5px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .total-summary {
+        background: #f9fafb;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-size: 1.1em;
+    }
+
+    .summary-row:not(:last-child) {
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .summary-row.total {
+        border-top: 2px solid #e5e7eb;
+        font-weight: bold;
+        font-size: 1.2em;
+        color: #2563eb;
+        padding-top: 12px;
+        margin-top: 4px;
+    }
+
+    .amount {
+        font-family: monospace;
+    }
+
+    .repair-items-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        background: white;
+    }
+
+    .repair-items-table th {
+        background: #f3f4f6;
+        padding: 12px;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .repair-items-table td {
+        padding: 12px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .payment-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin-bottom: 16px;
+    }
+
+    .payment-status.completed {
+        background-color: #ecfdf5;
+        color: #059669;
+    }
+
+    .payment-status.pending {
+        background-color: #fff8e1;
+        color: #b45309;
+    }
+
+    .payment-status i {
+        font-size: 20px;
+    }
+
+    .payment-info {
+        display: grid;
+        gap: 8px;
+    }
+
+    .payment-info p {
+        margin: 0;
+    }
+    </style>
+</body>
+</html>

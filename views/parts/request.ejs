@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เบิกอะไหล่</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/parts.css">
+</head>
+<body>
+    <%- include('../partials/header') %>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>เบิกอะไหล่</h1>
+            <a href="/parts/inventory" class="btn-secondary">
+                <i class="ri-arrow-left-line"></i> กลับ
+            </a>
+        </div>
+
+        <div class="request-form">
+            <form id="requestForm" onsubmit="return handleRequest(event)">
+                <div class="form-group">
+                    <label for="repair_id">รหัสงานซ่อม:</label>
+                    <div class="search-group">
+                        <input type="text" id="repair_id" name="repair_id" required>
+                        <button type="button" class="btn-search" onclick="searchRepair()">
+                            <i class="ri-search-line"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="repair_details" class="repair-details" style="display: none;">
+                    <div class="detail-row">
+                        <span class="label">ลูกค้า:</span>
+                        <span id="customer_name" class="value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">อุปกรณ์:</span>
+                        <span id="device_info" class="value"></span>
+                    </div>
+                </div>
+
+                <div class="selected-parts">
+                    <h2>รายการอะไหล่ที่เลือก</h2>
+                    <div id="selectedPartsList">
+                        <!-- รายการอะไหล่ที่เลือกจะแสดงที่นี่ -->
+                    </div>
+                    <button type="button" class="btn-add" onclick="showPartsModal()">
+                        <i class="ri-add-line"></i> เพิ่มอะไหล่
+                    </button>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary" id="submitBtn" disabled>
+                        <i class="ri-check-line"></i> บันทึกการเบิก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal เลือกอะไหล่ -->
+    <div id="partsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>เลือกอะไหล่</h2>
+                <button type="button" class="close-button" onclick="closePartsModal()">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="search-box">
+                    <input type="text" id="searchParts" class="search-input" 
+                           placeholder="ค้นหาอะไหล่..." onkeyup="filterParts()">
+                </div>
+                
+                <div class="parts-list">
+                    <% parts.forEach(part => { %>
+                        <div class="part-item" data-id="<%= part.id %>">
+                            <div class="part-info">
+                                <h3><%= part.name %></h3>
+                                <p>คงเหลือ: <span class="stock"><%= part.stock_quantity %></span></p> 
+                                <p>ราคา: <%= part.price.toFixed(2) %></p>
+                            </div>
+                            <div class="part-action">
+                                <input type="number" class="quantity-input"
+                                       min="1" max="<%= part.stock_quantity %>" value="1">
+                                <button type="button" class="btn-select" 
+                                        onclick="selectPart('<%= part.id %>', '<%= part.name %>', '<%= part.price %>')">
+                                    เลือก
+                                </button>
+                            </div>
+                        </div>
+                    <% }); %>
+                 </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedParts = new Map();
+
+        function searchRepair() {
+            const repairId = document.getElementById('repair_id').value;
+            fetch(`/repair/info/${repairId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayRepairDetails(data.repair);
+                    } else {
+                        alert('ไม่พบข้อมูลงานซ่อม');
+                    }
+                });
+        }
+
+        function displayRepairDetails(repair) {
+            document.getElementById('customer_name').textContent = 
+                `${repair.customer_first_name} ${repair.customer_last_name}`;
+            document.getElementById('device_info').textContent = 
+                `${repair.device_type} - ${repair.device_description}`;
+            document.getElementById('repair_details').style.display = 'block';
+        }
+
+        function selectPart(id, name, price) {
+            const quantityInput = document.querySelector(`[data-id="${id}"] .quantity-input`);
+            const quantity = parseInt(quantityInput.value);
+            const maxStock = parseInt(quantityInput.max);
+
+            if (quantity > maxStock) {
+                alert('จำนวนเกินสต็อกที่มี');
+                return;
+            }
+
+            selectedParts.set(id, {
+                name: name,
+                price: price,
+                quantity: quantity
+            });
+
+            updateSelectedPartsList();
+            closePartsModal();
+        }
+
+        function updateSelectedPartsList() {
+            const list = document.getElementById('selectedPartsList');
+            let html = '';
+
+            selectedParts.forEach((part, id) => {
+                html += `
+                    <div class="selected-part-item">
+                        <div class="part-details">
+                            <span>${part.name}</span>
+                            <span>x${part.quantity}</span>
+                            <span>฿${(part.price * part.quantity).toFixed(2)}</span>
+                        </div>
+                        <button type="button" class="btn-remove" onclick="removePart('${id}')">
+                            <i class="ri-delete-bin-line"></i>
+                        </button>
+                    </div>
+                `;
+            });
+
+            list.innerHTML = html;
+            document.getElementById('submitBtn').disabled = selectedParts.size === 0;
+        }
+
+        function removePart(id) {
+            selectedParts.delete(id);
+            updateSelectedPartsList();
+        }
+
+        function handleRequest(event) {
+            event.preventDefault();
+            const repairId = document.getElementById('repair_id').value;
+            const items = Array.from(selectedParts.entries()).map(([id, part]) => ({
+                part_id: id,
+                quantity: part.quantity
+            }));
+
+            fetch('/parts/request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    repair_id: repairId,
+                    items: items
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('บันทึกการเบิกสำเร็จ');
+                    window.location.href = '/parts/inventory';
+                } else {
+                    alert(data.message || 'เกิดข้อผิดพลาด');
+                }
+            });
+        }
+
+        function showPartsModal() {
+            document.getElementById('partsModal').style.display = 'block';
+        }
+
+        function closePartsModal() {
+            document.getElementById('partsModal').style.display = 'none';
+            document.getElementById('searchParts').value = '';
+            filterParts();
+        }
+
+        function filterParts() {
+            const searchText = document.getElementById('searchParts').value.toLowerCase();
+            const parts = document.querySelectorAll('.part-item');
+            
+            parts.forEach(part => {
+                const name = part.querySelector('h3').textContent.toLowerCase();
+                part.style.display = name.includes(searchText) ? 'flex' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

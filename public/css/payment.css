@@ -1,0 +1,53 @@
+/* public/css/payment.css */
+.amount {
+    font-size: 24px;
+    color: #2563eb;
+    text-align: center;
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+.payment-method {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 10px;
+}
+
+.reference-group {
+    margin-top: 10px;
+}
+
+.reference-input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+.payment-summary {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.payment-summary h4 {
+    margin: 0;
+    color: #64748b;
+}
+
+.payment-summary .total {
+    font-size: 28px;
+    color: #2563eb;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.payment-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
