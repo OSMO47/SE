@@ -290,7 +290,28 @@
                                    <textarea name="repairs[0][device_description]" 
                                            class="device-description"
                                            rows="3" required 
-                                           placeholder="กรุณาระบุรายละเอียดอุปกรณ์ เช่น ยี่ห้อ รุ่น อาการเสีย"></textarea>
+                                           placeholder="กรุณาระบุรายละเอียดอุปกรณ์ เช่น ยี่ห้อ รุ่น สี ความจุ"></textarea>
+                               </div>
+                               <div class="form-group">
+                                   <label>อาการเสีย:</label>
+                                   <textarea name="repairs[0][issue_description]"
+                                           class="issue-description"
+                                           rows="3" required
+                                           placeholder="กรุณาระบุอาการเสียของเครื่อง"></textarea>
+                               </div>
+                               <div class="form-group">
+                                   <label>รหัสเครื่อง:</label>
+                                   <div class="device-code-row">
+                                       <input type="text"
+                                              class="device-code-input"
+                                              name="repairs[0][device_code]"
+                                              required
+                                              placeholder="กรอกรหัสเครื่องเพื่อตรวจสอบประวัติ">
+                                       <button type="button" class="btn-secondary btn-check-device">
+                                           <i class="ri-search-line"></i> ตรวจสอบประวัติ
+                                       </button>
+                                   </div>
+                                   <small class="form-hint">หากกรอกรหัสเครื่อง ระบบจะแสดงประวัติการซ่อมที่ผ่านมา</small>
                                </div>
                                <div class="form-group">
                                    <label>รหัสเครื่อง:</label>
