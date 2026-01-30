@@ -6,7 +6,8 @@ const API_ENDPOINTS = {
     ACCEPT: '/repair/accept',
     UPDATE_STATUS: '/repair/update-status',
     GET_TOTAL: '/repair/get-total',
-    PAYMENT: '/repair/payment'
+    PAYMENT: '/repair/payment',
+    DEVICE_HISTORY: '/repair/device-history'
 };
 
 let repairCounter = 0;  // นับจำนวนรายการซ่อม
@@ -228,6 +229,14 @@ function createNewRepairItem() {
     template.querySelectorAll('.part-quantity').forEach(div => div.style.display = 'none');
     template.querySelector('.device-type-select').value = '';
     template.querySelector('.device-description').value = '';
+    const issueDescriptionInput = template.querySelector('.issue-description');
+    if (issueDescriptionInput) {
+        issueDescriptionInput.value = '';
+    }
+    const deviceCodeInput = template.querySelector('.device-code-input');
+    if (deviceCodeInput) {
+        deviceCodeInput.value = '';
+    }
     template.querySelector('.part-search').value = '';
 
     // ตั้งค่า event handlers
@@ -255,6 +264,93 @@ function setupRepairItemEvents(repairItem) {
     repairItem.querySelectorAll('input[name*="repair_types"]').forEach(checkbox => {
         checkbox.addEventListener('change', () => handleRepairTypeChange(checkbox));
     });
+
+    const deviceCodeInput = repairItem.querySelector('.device-code-input');
+    const checkButton = repairItem.querySelector('.btn-check-device');
+    if (deviceCodeInput && checkButton) {
+        checkButton.addEventListener('click', () => handleDeviceHistoryCheck(repairItem));
+        deviceCodeInput.addEventListener('blur', () => handleDeviceHistoryCheck(repairItem, true));
+    }
+}
+
+function formatCurrency(amount) {
+    return `฿${Number(amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}`;
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('th-TH');
+}
+
+async function handleDeviceHistoryCheck(repairItem, isSilent = false) {
+    const input = repairItem.querySelector('.device-code-input');
+    if (!input) return;
+
+    const deviceCode = input.value.trim();
+    if (!deviceCode) {
+        if (!isSilent) showNotification('กรุณากรอกรหัสเครื่องก่อนตรวจสอบ', 'warning');
+        return;
+    }
+
+    try {
+        if (!isSilent) showNotification('กำลังตรวจสอบประวัติการซ่อม...', 'info');
+        const response = await fetch(`${API_ENDPOINTS.DEVICE_HISTORY}?device_code=${encodeURIComponent(deviceCode)}`);
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || 'ไม่สามารถตรวจสอบประวัติได้');
+        }
+
+        if (result.history.length === 0) {
+            if (!isSilent) showNotification('ไม่พบประวัติการซ่อมจากรหัสเครื่องนี้', 'info');
+            return;
+        }
+
+        openDeviceHistoryModal(deviceCode, result.history);
+    } catch (error) {
+        console.error('Error:', error);
+        if (!isSilent) showNotification(`เกิดข้อผิดพลาดในการตรวจสอบ: ${error.message}`, 'error');
+    }
+}
+
+function openDeviceHistoryModal(deviceCode, history) {
+    const modal = document.getElementById('deviceHistoryModal');
+    const tableBody = document.getElementById('deviceHistoryTableBody');
+    const emptyState = document.getElementById('deviceHistoryEmpty');
+    const codeLabel = document.getElementById('historyDeviceCode');
+
+    if (!modal || !tableBody || !emptyState || !codeLabel) return;
+
+    codeLabel.textContent = deviceCode;
+    tableBody.innerHTML = '';
+
+    if (!history.length) {
+        emptyState.style.display = 'block';
+    } else {
+        emptyState.style.display = 'none';
+        history.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.repair_code || '-'}</td>
+                <td>${item.customer_name || '-'}<br><small>${item.phone_number || '-'}</small></td>
+                <td>${item.device_type || '-'}<br><small>${item.device_description || '-'}</small></td>
+                <td>${item.repair_types || '-'}</td>
+                <td>${formatCurrency(item.total_amount)}</td>
+                <td>${formatDate(item.created_at)}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    modal.style.display = 'block';
+}
+
+function closeDeviceHistoryModal() {
+    const modal = document.getElementById('deviceHistoryModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 async function showPaymentModal(repairId) {
     try {
@@ -502,6 +598,8 @@ async function handleCreateForm(event) {
             repairs: Array.from(document.querySelectorAll('.repair-item')).map((item, index) => {
                 const deviceTypeSelect = item.querySelector(`select[name="repairs[${index}][device_type_id]"]`);
                 const deviceDescription = item.querySelector(`textarea[name="repairs[${index}][device_description]"]`);
+                const issueDescription = item.querySelector(`textarea[name="repairs[${index}][issue_description]"]`);
+                const deviceCode = item.querySelector(`input[name="repairs[${index}][device_code]"]`);
                 
                 // รายการซ่อม
                 const repairTypes = Array.from(
@@ -519,9 +617,17 @@ async function handleCreateForm(event) {
                     quantities.push(parseInt(quantity));
                 });
  
+                const deviceDescriptionText = deviceDescription.value.trim();
+                const issueDescriptionText = issueDescription ? issueDescription.value.trim() : '';
+                const combinedDescription = issueDescriptionText
+                    ? `${deviceDescriptionText}\nอาการเสีย: ${issueDescriptionText}`
+                    : deviceDescriptionText;
+
                 return {
                     device_type_id: parseInt(deviceTypeSelect.value),
-                    device_description: deviceDescription.value.trim(),
+                    device_description: combinedDescription,
+                    issue_description: issueDescriptionText,
+                    device_code: deviceCode ? deviceCode.value.trim() : null,
                     repair_types: repairTypes,
                     parts: parts,
                     quantities: quantities
@@ -550,6 +656,14 @@ async function handleCreateForm(event) {
             if (!repair.device_description) {
                 showNotification(`กรุณากรอกรายละเอียดอุปกรณ์ในรายการที่ ${index + 1}`, 'error');
                 throw new Error(`กรุณากรอกรายละเอียดอุปกรณ์ในรายการที่ ${index + 1}`);
+            }
+            if (!repair.issue_description) {
+                showNotification(`กรุณากรอกอาการเสียในรายการที่ ${index + 1}`, 'error');
+                throw new Error(`กรุณากรอกอาการเสียในรายการที่ ${index + 1}`);
+            }
+            if (!repair.device_code) {
+                showNotification(`กรุณากรอกรหัสเครื่องในรายการที่ ${index + 1}`, 'error');
+                throw new Error(`กรุณากรอกรหัสเครื่องในรายการที่ ${index + 1}`);
             }
             if (!repair.repair_types.length) {
                 showNotification(`กรุณาเลือกรายการซ่อมในรายการที่ ${index + 1}`, 'error');
@@ -637,6 +751,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 closeUpdateModal();
             } else if (modal.id === 'paymentModal') {
                 closePaymentModal();
+            } else if (modal.id === 'deviceHistoryModal') {
+                closeDeviceHistoryModal();
             }
         });
     });
@@ -647,6 +763,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const modalId = event.target.id;
             if (modalId === 'updateModal') closeUpdateModal();
             else if (modalId === 'paymentModal') closePaymentModal();
+            else if (modalId === 'deviceHistoryModal') closeDeviceHistoryModal();
         }
     };
 });
