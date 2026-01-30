@@ -240,6 +240,7 @@ CREATE TABLE `repair_info` (
   `customer_id` int NOT NULL,
   `device_type_id` int NOT NULL,
   `device_description` text,
+  `device_code` varchar(100) DEFAULT NULL,
   `status_id` int NOT NULL DEFAULT '1',
   `mechanic_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -250,9 +251,9 @@ CREATE TABLE `repair_info` (
 -- Dumping data for table `repair_info`
 --
 
-INSERT INTO `repair_info` (`id`, `repair_code`, `customer_id`, `device_type_id`, `device_description`, `status_id`, `mechanic_id`, `created_at`, `updated_at`) VALUES
-(33, 'R1731340309848-5084', 9, 1, 'iphone น้องพิมเสีย', 1, NULL, '2024-11-11 15:51:49', '2024-11-11 15:51:49'),
-(34, 'R1731340390291-407', 9, 2, 'แท็บเล็ตน้องพิมปริ้นไม่ออก', 5, 4, '2024-11-11 15:53:10', '2024-11-12 08:09:38');
+INSERT INTO `repair_info` (`id`, `repair_code`, `customer_id`, `device_type_id`, `device_description`, `device_code`, `status_id`, `mechanic_id`, `created_at`, `updated_at`) VALUES
+(33, 'R1731340309848-5084', 9, 1, 'iphone น้องพิมเสีย', NULL, 1, NULL, '2024-11-11 15:51:49', '2024-11-11 15:51:49'),
+(34, 'R1731340390291-407', 9, 2, 'แท็บเล็ตน้องพิมปริ้นไม่ออก', NULL, 5, 4, '2024-11-11 15:53:10', '2024-11-12 08:09:38');
 
 -- --------------------------------------------------------
 
@@ -456,6 +457,7 @@ ALTER TABLE `repair_info`
   ADD KEY `customer_id` (`customer_id`),
   ADD KEY `device_type_id` (`device_type_id`),
   ADD KEY `status_id` (`status_id`),
+  ADD KEY `device_code` (`device_code`),
   ADD KEY `mechanic_id` (`mechanic_id`);
 
 --
