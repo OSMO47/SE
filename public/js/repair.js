@@ -233,6 +233,10 @@ function createNewRepairItem() {
     if (issueDescriptionInput) {
         issueDescriptionInput.value = '';
     }
+    const deviceImeiInput = template.querySelector('.device-imei-input');
+    if (deviceImeiInput) {
+        deviceImeiInput.value = '';
+    }
     const deviceCodeInput = template.querySelector('.device-code-input');
     if (deviceCodeInput) {
         deviceCodeInput.value = '';
@@ -265,10 +269,16 @@ function setupRepairItemEvents(repairItem) {
         checkbox.addEventListener('change', () => handleRepairTypeChange(checkbox));
     });
 
+    const deviceImeiInput = repairItem.querySelector('.device-imei-input');
     const deviceCodeInput = repairItem.querySelector('.device-code-input');
     const checkButton = repairItem.querySelector('.btn-check-device');
-    if (deviceCodeInput && checkButton) {
+    if (checkButton) {
         checkButton.addEventListener('click', () => handleDeviceHistoryCheck(repairItem));
+    }
+    if (deviceImeiInput) {
+        deviceImeiInput.addEventListener('blur', () => handleDeviceHistoryCheck(repairItem, true));
+    }
+    if (deviceCodeInput) {
         deviceCodeInput.addEventListener('blur', () => handleDeviceHistoryCheck(repairItem, true));
     }
 }
@@ -284,12 +294,11 @@ function formatDate(dateString) {
 }
 
 async function handleDeviceHistoryCheck(repairItem, isSilent = false) {
-    const input = repairItem.querySelector('.device-code-input');
-    if (!input) return;
-
-    const deviceCode = input.value.trim();
+    const imeiInput = repairItem.querySelector('.device-imei-input');
+    const codeInput = repairItem.querySelector('.device-code-input');
+    const deviceCode = (imeiInput?.value || codeInput?.value || '').trim();
     if (!deviceCode) {
-        if (!isSilent) showNotification('กรุณากรอกรหัสเครื่องก่อนตรวจสอบ', 'warning');
+        if (!isSilent) showNotification('กรุณากรอกรหัส IMEI หรือรหัสเครื่องก่อนตรวจสอบ', 'warning');
         return;
     }
 
@@ -599,6 +608,7 @@ async function handleCreateForm(event) {
                 const deviceTypeSelect = item.querySelector(`select[name="repairs[${index}][device_type_id]"]`);
                 const deviceDescription = item.querySelector(`textarea[name="repairs[${index}][device_description]"]`);
                 const issueDescription = item.querySelector(`textarea[name="repairs[${index}][issue_description]"]`);
+                const deviceImei = item.querySelector(`input[name="repairs[${index}][device_imei]"]`);
                 const deviceCode = item.querySelector(`input[name="repairs[${index}][device_code]"]`);
                 
                 // รายการซ่อม
@@ -623,11 +633,14 @@ async function handleCreateForm(event) {
                     ? `${deviceDescriptionText}\nอาการเสีย: ${issueDescriptionText}`
                     : deviceDescriptionText;
 
+                const imeiValue = deviceImei ? deviceImei.value.trim() : '';
+                const deviceCodeValue = deviceCode ? deviceCode.value.trim() : '';
+
                 return {
                     device_type_id: parseInt(deviceTypeSelect.value),
                     device_description: combinedDescription,
                     issue_description: issueDescriptionText,
-                    device_code: deviceCode ? deviceCode.value.trim() : null,
+                    device_code: imeiValue || deviceCodeValue || null,
                     repair_types: repairTypes,
                     parts: parts,
                     quantities: quantities
@@ -662,8 +675,8 @@ async function handleCreateForm(event) {
                 throw new Error(`กรุณากรอกอาการเสียในรายการที่ ${index + 1}`);
             }
             if (!repair.device_code) {
-                showNotification(`กรุณากรอกรหัสเครื่องในรายการที่ ${index + 1}`, 'error');
-                throw new Error(`กรุณากรอกรหัสเครื่องในรายการที่ ${index + 1}`);
+                showNotification(`กรุณากรอกรหัส IMEI ในรายการที่ ${index + 1}`, 'error');
+                throw new Error(`กรุณากรอกรหัส IMEI ในรายการที่ ${index + 1}`);
             }
             if (!repair.repair_types.length) {
                 showNotification(`กรุณาเลือกรายการซ่อมในรายการที่ ${index + 1}`, 'error');

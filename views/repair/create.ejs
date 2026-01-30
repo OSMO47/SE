@@ -300,32 +300,31 @@
                                            placeholder="กรุณาระบุอาการเสียของเครื่อง"></textarea>
                                </div>
                                <div class="form-group">
-                                   <label>รหัสเครื่อง:</label>
+                                   <label>รหัส IMEI เครื่อง:</label>
                                    <div class="device-code-row">
                                        <input type="text"
-                                              class="device-code-input"
-                                              name="repairs[0][device_code]"
+                                              class="device-imei-input"
+                                              name="repairs[0][device_imei]"
                                               required
-                                              placeholder="กรอกรหัสเครื่องเพื่อตรวจสอบประวัติ">
+                                              placeholder="กรอกรหัส IMEI เพื่อใช้ค้นหาประวัติ">
                                        <button type="button" class="btn-secondary btn-check-device">
                                            <i class="ri-search-line"></i> ตรวจสอบประวัติ
                                        </button>
                                    </div>
-                                   <small class="form-hint">หากกรอกรหัสเครื่อง ระบบจะแสดงประวัติการซ่อมที่ผ่านมา</small>
+                                   <small class="form-hint">ใช้รหัส IMEI ตรวจสอบว่ามีประวัติการซ่อมหรือไม่</small>
                                </div>
                                <div class="form-group">
-                                   <label>รหัสเครื่อง:</label>
+                                   <label>รหัสเครื่อง (อื่น ๆ):</label>
                                    <div class="device-code-row">
                                        <input type="text"
                                               class="device-code-input"
                                               name="repairs[0][device_code]"
-                                              required
-                                              placeholder="กรอกรหัสเครื่องเพื่อตรวจสอบประวัติ">
+                                              placeholder="เช่น Serial Number (ถ้ามี)">
                                        <button type="button" class="btn-secondary btn-check-device">
                                            <i class="ri-search-line"></i> ตรวจสอบประวัติ
                                        </button>
                                    </div>
-                                   <small class="form-hint">หากกรอกรหัสเครื่อง ระบบจะแสดงประวัติการซ่อมที่ผ่านมา</small>
+                                   <small class="form-hint">หากกรอก จะใช้รหัสนี้ค้นหาประวัติเพิ่มเติม</small>
                                </div>
 
                                <div class="form-group">
